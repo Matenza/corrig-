@@ -1,0 +1,96 @@
+create database gadg;
+use gadg;
+create table customer 
+(customer_id int primary key ,
+customer_name varchar(50),
+customer_tel varchar(50));
+create table product( 
+product_id int primary key,
+product_name varchar(50),
+category  varchar(50),
+price decimal(4));
+create table orders(
+orders_id int primary key,
+orderdate date ,
+quantite int ,
+total_amount int ,
+customer_id int,
+product_id  int,
+constraint foreign key (customer_id)references customer (customer_id),
+constraint foreign key (product_id)references product(product_id));
+
+
+  
+  INSERT INTO customer (customer_id,customer_name,customer_tel)
+VALUES
+    (1, 'Alice','339870765'),
+    (2, 'Bob', '778954342'),
+    (3, 'assata','765432234');
+
+INSERT INTO product (product_id,product_name,category, price)
+VALUES
+    (1,'Electronique','Widget', 10.00),
+    (2,'Menage','Gadget', 20.00),
+    (3,'Golfing', 'Doohickey',15.00);
+
+INSERT INTO orders (orders_id, customer_id, product_id, orderdate, quantite,total_amount)
+VALUES
+    (1, 1, 1, '2021-01-01', 10, 100.00),
+    (2, 1, 2, '2021-01-02', 5, 50.00),
+    (3, 2, 1, '2021-01-03', 3, 30.00),
+    (4, 2, 2, '2021-01-04', 7, 140.00),
+    (5, 3, 1, '2021-01-05', 2, 20.00),
+    (6, 3, 3, '2021-01-06', 3, 45.00),
+    (7, 2, 3, '2021-01-07', 3, 45.00);
+    
+    SELECT customer.customer_name AS Commande_widget,
+           COUNT(CASE WHEN product.category='widget'then orders.quantite*product.price else 0 END) AS COUT_total, 
+           COUNT(CASE WHEN product.category='gadget'then orders.quantite*product.price else 0 END) AS COUT_total
+    FROM customer  
+    INNER JOIN orders on customer.customer_id=orders.customer_id 
+    INNER JOIN product on orders.product_id=product.product_id
+    WHERE product.category in ('widget','gadget')
+    GROUP BY customer.customer_id, customer.customer_name 
+    HAVING COUNT(DISTINCT CASE WHEN product.category='widget' THEN orders.product_id END)>=1
+    AND COUNT(DISTINCT CASE WHEN product.category='gadget' THEN orders.product_id END)>=1;
+
+
+select customer.customer_name , 
+	   SUM(case when product.category="widget" then orders.quantite*product.price else 0 end ) AS cout_total
+from customer
+join orders on customer.customer_id=orders.customer_id
+join product on orders.product_id=product.product_id
+where product.category = "widget" 
+group  by  customer.customer_name having sum(case when product.categorie =  "widget" then 1 else 0 end) >= 1;
+
+
+
+select customer.customer_name , 
+	   SUM(orders.quantite*product.price) AS cout_totaldoohickeys 
+from customer
+join orders on customer.customer_id=orders.customer_id
+join product on orders.product_id=product.product_id
+where product.category = "doohickey" 
+group  by  customer.customer_name; 
+
+select product.product_name,count(orders.quantite) as total_quantité
+ from product
+ join orders on product.product_id = orders.product_id
+ group by product.product_name
+ having sum(orders.quantite)>=1;
+ 
+ Select customer.customer_name, count(orders.quantite) as total_commandes
+ from customer 
+ join orders on customer.customer_id= orders.customer_id
+ group by customer.customer_name
+ order by count(orders.quantite) desc;
+ 
+ 
+ select customer.customer_name, count(distinct date_format(orders.orderdate , "years-month-day")) as total_commandes 
+ from customer
+ join orders on customer.customer_id=orders.customer_id
+ group by customer.customer_name
+ having count(distinct date_format(orders.orderdate , "years-month-day"))=7;
+ 
+ 
+ 
